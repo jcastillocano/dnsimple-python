@@ -4,7 +4,7 @@ Client for DNSimple REST API
 http://developer.dnsimple.com/overview/
 """
 
-__version__ = '0.3.5'
+__version__ = '0.3.6'
 
 try:
     # Use stdlib's json if available (2.6+)
@@ -20,7 +20,10 @@ try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
-from requests import Request, Session, ConnectionError, HTTPError
+try:
+    from requests import Request, Session, ConnectionError, HTTPError
+except ImportError:
+    pass
 
 # To handle discrepancies between python 2 and 3 bytes.
 import sys
@@ -85,7 +88,7 @@ class DNSimple(object):
 
     @staticmethod
     def __get_auth_string(username, password):
-        encoded_string = encodebytes(b(username + ':' + password))[:-1].decode()
+        encoded_string = encodebytes((username + ':' + password).encode())[:-1].decode()
         return "Basic {encoded_string}".format(encoded_string=encoded_string)
 
     def __get_auth_header(self):
@@ -203,6 +206,13 @@ class DNSimple(object):
         domain ID or the domain name.
         """
         return self.__rest_helper('/domains/{name}'.format(name=id_or_domain_name), method='DELETE')
+
+    def name_servers(self, id_or_domain_name):
+        """
+        List name servers for a domain given from your account. You may use either the
+        domain ID or the domain name.
+        """
+        return self.__rest_helper('/domains/{name}/name_servers'.format(name=id_or_domain_name), method='GET')
 
     # RECORDS
 
